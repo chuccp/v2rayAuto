@@ -5,7 +5,7 @@ import "sync"
 var serverMap = new(sync.Map)
 
 func RegisterServer(server *Server) {
-	serverMap.LoadOrStore(server.key, server)
+	serverMap.LoadOrStore(server.GetKey(), server)
 }
 func RangeServer(f func(server *Server)) {
 	serverMap.Range(func(_, value any) bool {
