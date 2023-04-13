@@ -5,12 +5,14 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/x509"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge/http01"
 	"github.com/go-acme/lego/v4/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/v2fly/v2ray-core/v5/common/protocol/tls/cert"
 )
 
 type CertUser struct {
@@ -81,4 +83,7 @@ func GetCertificateFromLego(domain []string, email string) (*certificate.Resourc
 	}
 	// 申请完了后，里面会带有证书的PrivateKey Certificate，都为[]byte格式，需要存储的自行转为string即可
 	return certificates, nil
+}
+func GetCertificateFromSelf() (*cert.Certificate, error) {
+	return cert.Generate(nil, cert.Authority(true), cert.KeyUsage(x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment|x509.KeyUsageCertSign))
 }

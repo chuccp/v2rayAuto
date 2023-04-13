@@ -151,8 +151,7 @@ func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig) (*core.InboundH
 	return inboundHandlerConfig, nil
 }
 
-func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*Server, error) {
-
+func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*WsServer, error) {
 	inboundHandlerConfigs, portRanges, err := getWebSocketInboundHandlerConfigs(webSocketConfig)
 	if err != nil {
 		return nil, err
@@ -174,5 +173,5 @@ func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Server{instance: instance, webSocketConfig: webSocketConfig, usePorts: portRanges}, nil
+	return &WsServer{instance: instance, webSocketConfig: webSocketConfig, usePorts: portRanges}, nil
 }

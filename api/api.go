@@ -7,7 +7,7 @@ import (
 
 func Subscribe(c *gin.Context) {
 	urls := make([]string, 0)
-	v2ray.RangeServer(func(server *v2ray.Server) {
+	v2ray.RangeServer(func(server v2ray.Server) {
 		client := server.GetClient()
 		for _, url := range client {
 			urls = append(urls, url)
