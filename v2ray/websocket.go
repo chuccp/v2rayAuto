@@ -1,14 +1,13 @@
 package v2ray
 
 import (
-	"crypto/x509"
+	"github.com/chuccp/v2rayAuto/cert"
 	"github.com/chuccp/v2rayAuto/util"
 	core "github.com/v2fly/v2ray-core/v5"
 	"github.com/v2fly/v2ray-core/v5/app/dispatcher"
 	"github.com/v2fly/v2ray-core/v5/app/proxyman"
 	"github.com/v2fly/v2ray-core/v5/common/net"
 	"github.com/v2fly/v2ray-core/v5/common/protocol"
-	"github.com/v2fly/v2ray-core/v5/common/protocol/tls/cert"
 	"github.com/v2fly/v2ray-core/v5/common/serial"
 	"github.com/v2fly/v2ray-core/v5/common/uuid"
 	"github.com/v2fly/v2ray-core/v5/proxy/freedom"
@@ -27,10 +26,10 @@ type WebSocketConfig struct {
 	Id             string
 	AlterId        uint32
 	CamouflageHost string
-	Host           string
+	Domain         string
 	CreateNum      uint32
+	Email          string
 	ramPort        *ramPort
-	Key            string
 }
 
 type ramPort struct {
@@ -40,7 +39,7 @@ type ramPort struct {
 	perFromPort uint32
 }
 
-func CreateWebSocketConfig(host string, FromPort uint32, ToPort uint32, createNum uint32, key string) *WebSocketConfig {
+func CreateWebSocketConfig(domain string, email string, FromPort uint32, ToPort uint32, createNum uint32) *WebSocketConfig {
 	uuid := uuid.New()
 	return &WebSocketConfig{
 		FromPort: FromPort,
@@ -48,9 +47,9 @@ func CreateWebSocketConfig(host string, FromPort uint32, ToPort uint32, createNu
 		Path:     "/coke/",
 		AlterId:  0,
 		Id:       uuid.String(),
-		Host:     host,
+		Domain:   domain,
+		Email:    email,
 		ramPort:  &ramPort{fromPort: FromPort, createNum: createNum, toPort: 0},
-		Key:      key,
 	}
 }
 func (wsc *WebSocketConfig) getRamPort() *ramPort {
@@ -71,7 +70,7 @@ func (wsc *WebSocketConfig) getRamPort() *ramPort {
 }
 func (wsc *WebSocketConfig) getPortRanges() []*net.PortRange {
 	ramPort := wsc.getRamPort()
-	pr := &net.PortRange{From: ramPort.perFromPort, To: 8089}
+	pr := &net.PortRange{From: ramPort.perFromPort, To: ramPort.toPort}
 	portRanges := util.GetNoUsePort(pr)
 	if ramPort.fromPort < ramPort.perFromPort {
 		portRanges = append(portRanges, &net.PortRange{From: ramPort.fromPort, To: ramPort.perFromPort - 1})
@@ -79,7 +78,7 @@ func (wsc *WebSocketConfig) getPortRanges() []*net.PortRange {
 	return portRanges
 }
 func (wsc *WebSocketConfig) toWsConfig(portRange *net.PortRange) *wsConfig {
-	return &wsConfig{Path: wsc.Path, FromPort: portRange.From, ToPort: portRange.To, Key: wsc.Key, Id: wsc.Id}
+	return &wsConfig{Path: wsc.Path, FromPort: portRange.From, ToPort: portRange.To, Id: wsc.Id}
 }
 
 type wsConfig struct {
@@ -90,11 +89,11 @@ type wsConfig struct {
 	Id       string
 }
 
-func getWebSocketInboundHandlerConfigs(webSocketConfig *WebSocketConfig) ([]*core.InboundHandlerConfig, []*net.PortRange, error) {
+func getWebSocketInboundHandlerConfigs(webSocketConfig *WebSocketConfig, pem []byte, key []byte) ([]*core.InboundHandlerConfig, []*net.PortRange, error) {
 	inboundHandlerConfigs := make([]*core.InboundHandlerConfig, 0)
 	portRanges := webSocketConfig.getPortRanges()
 	for _, portRange := range portRanges {
-		InboundHandlerConfig, err := getWebSocketInboundHandlerConfig(webSocketConfig.toWsConfig(portRange))
+		InboundHandlerConfig, err := getWebSocketInboundHandlerConfig(webSocketConfig.toWsConfig(portRange), pem, key)
 		if err != nil {
 			return nil, portRanges, err
 		}
@@ -102,13 +101,8 @@ func getWebSocketInboundHandlerConfigs(webSocketConfig *WebSocketConfig) ([]*cor
 	}
 	return inboundHandlerConfigs, portRanges, nil
 }
-func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig) (*core.InboundHandlerConfig, error) {
+func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig, pem []byte, key []byte) (*core.InboundHandlerConfig, error) {
 	userID := webSocketConfig.Id
-	caCert, err := cert.Generate(nil, cert.Authority(true), cert.KeyUsage(x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment|x509.KeyUsageCertSign))
-	if err != nil {
-		return nil, err
-	}
-	certPEM, keyPEM := caCert.ToPEM()
 	inboundHandlerConfig := &core.InboundHandlerConfig{
 		ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
 			PortRange: &net.PortRange{
@@ -130,8 +124,8 @@ func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig) (*core.InboundH
 				SecuritySettings: []*anypb.Any{
 					serial.ToTypedMessage(&tls.Config{
 						Certificate: []*tls.Certificate{{
-							Certificate: certPEM,
-							Key:         keyPEM,
+							Certificate: pem,
+							Key:         key,
 							Usage:       tls.Certificate_AUTHORITY_ISSUE,
 						}},
 					}),
@@ -151,10 +145,16 @@ func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig) (*core.InboundH
 	return inboundHandlerConfig, nil
 }
 
-func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*WsServer, error) {
-	inboundHandlerConfigs, portRanges, err := getWebSocketInboundHandlerConfigs(webSocketConfig)
+func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*core.Instance, []*net.PortRange, error) {
+
+	pem, key, err := cert.LoadCertPem(webSocketConfig.Domain, webSocketConfig.Email, "", 80)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	inboundHandlerConfigs, portRanges, err := getWebSocketInboundHandlerConfigs(webSocketConfig, pem, key)
+	if err != nil {
+		return nil, nil, err
 	}
 	serverConfig := &core.Config{
 		App: []*anypb.Any{
@@ -171,7 +171,7 @@ func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*WsServer, error) 
 	}
 	instance, err := core.New(serverConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return &WsServer{instance: instance, webSocketConfig: webSocketConfig, usePorts: portRanges}, nil
+	return instance, portRanges, nil
 }

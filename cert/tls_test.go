@@ -1,4 +1,4 @@
-package tls
+package cert
 
 import (
 	"fmt"
@@ -43,4 +43,15 @@ func TestSaveCert(t *testing.T) {
 			log.Fatalln("WriteFile key certificate:", err)
 		}
 	}
+}
+func TestCert222(t *testing.T) {
+
+	pem, key, err := LoadCertPem("127.0.0.1", "cooge123@gmail.com", "", 80)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	t.Log(pem)
+	t.Log(key)
+
 }
