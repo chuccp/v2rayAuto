@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"encoding/base64"
 	"github.com/chuccp/v2rayAuto/core"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -11,6 +13,7 @@ type Server struct {
 }
 
 func (s *Server) Subscribe(c *gin.Context) {
+	buff := new(bytes.Buffer)
 	urls := make([]string, 0)
 	s.context.RangeServer(func(server core.Server) {
 		client := server.GetClient()
@@ -18,12 +21,14 @@ func (s *Server) Subscribe(c *gin.Context) {
 			urls = append(urls, url)
 		}
 	})
+	lSize := len(urls) - 1
 	for i, url := range urls {
-		c.Writer.WriteString(url)
-		if i != len(urls) {
-			c.Writer.WriteString("\n")
+		buff.WriteString(url)
+		if i != lSize {
+			buff.WriteString("\r\n")
 		}
 	}
+	c.Writer.WriteString(base64.StdEncoding.EncodeToString(buff.Bytes()))
 }
 func (s *Server) Flush(c *gin.Context) {
 	s.context.RangeServer(func(server core.Server) {

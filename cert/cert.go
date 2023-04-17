@@ -2,6 +2,7 @@ package cert
 
 import (
 	"github.com/chuccp/v2rayAuto/util"
+	"github.com/v2fly/v2ray-core/v5/common"
 	"time"
 )
 
@@ -11,51 +12,33 @@ func LoadCertPem(Domain string, Email string, Path string, ValidDay int) ([]byte
 	keyPemFilename := Domain + ".key.pem"
 
 	file, err := util.NewFile(Path)
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 
 	certFile, err := file.Child(certPemFilename)
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	keyFile, err := file.Child(keyPemFilename)
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 
 	cerExists, err := certFile.Exists()
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	keyExists, err := keyFile.Exists()
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	if !cerExists || !keyExists {
 		return createCertPem(Domain, Email, certFile, keyFile)
 	}
 
 	certTime, err := certFile.ModTime()
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	keyTime, err := keyFile.ModTime()
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	t := time.Now()
 	if certTime.Add(time.Hour*time.Duration(ValidDay*24)).Before(t) || keyTime.Add(time.Hour*time.Duration(ValidDay*24)).Before(t) {
 		return createCertPem(Domain, Email, certFile, keyFile)
 	}
 	certPEM, err := certFile.ReadAll()
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	keyPEM, err := keyFile.ReadAll()
-	if err != nil {
-		return nil, nil, err
-	}
+	common.Must(err)
 	return certPEM, keyPEM, nil
 }
 

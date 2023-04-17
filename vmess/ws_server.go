@@ -52,7 +52,7 @@ func (s *WsServer) GetClient() []string {
 			s.webSocketConfig.Domain + "\",\"port\":\"" +
 			strconv.Itoa(port) + "\",\"id\":\"" +
 			s.webSocketConfig.Id + "\",\"aid\":\"0\",\"scy\":\"auto\",\"net\":\"ws\",\"type\":\"none\",\"host\":\"" +
-			s.webSocketConfig.Domain + "\",\"path\":\"/coke/\",\"tls\":\"tls\",\"sni\":\"\",\"alpn\":\"\",\"fp\":\"\",\"allowInsecure\":true}"
+			s.webSocketConfig.Domain + "\",\"path\":\"" + "/coke_" + strconv.Itoa(port) + "/" + "\",\"tls\":\"tls\",\"sni\":\"\",\"alpn\":\"\",\"fp\":\"\",\"allowInsecure\":true}"
 		url := "vmess://" + base64.StdEncoding.EncodeToString([]byte(config))
 		urls = append(urls, url)
 	}
