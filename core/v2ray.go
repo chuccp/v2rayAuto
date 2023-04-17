@@ -2,6 +2,7 @@ package core
 
 import (
 	"github.com/chuccp/v2rayAuto/config"
+	"github.com/robfig/cron/v3"
 	"github.com/v2fly/v2ray-core/v5/common"
 	"sync"
 )
@@ -23,6 +24,14 @@ func (v *V2ray) Start() error {
 		err := server.Start(v.context)
 		common.Must(err)
 	})
+	cr := cron.New(cron.WithSeconds())
+	cr.AddFunc("0 0 0 * * *", func() {
+		v.RangeServer(func(server Server) {
+			err := server.Flush()
+			common.Must(err)
+		})
+	})
+	cr.Start()
 	v.apiServer.Start(v.context)
 	return nil
 }

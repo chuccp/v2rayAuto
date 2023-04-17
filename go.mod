@@ -65,6 +65,7 @@ require (
 	github.com/quic-go/quic-go v0.33.0 // indirect
 	github.com/refraction-networking/utls v1.3.1 // indirect
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
 	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

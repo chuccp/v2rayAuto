@@ -1,7 +1,9 @@
-package v2ray
+package vmess
 
 import (
+	"container/list"
 	"github.com/chuccp/v2rayAuto/cert"
+	core2 "github.com/chuccp/v2rayAuto/core"
 	"github.com/chuccp/v2rayAuto/util"
 	core "github.com/v2fly/v2ray-core/v5"
 	"github.com/v2fly/v2ray-core/v5/app/dispatcher"
@@ -17,97 +19,117 @@ import (
 	"github.com/v2fly/v2ray-core/v5/transport/internet/tls"
 	"github.com/v2fly/v2ray-core/v5/transport/internet/websocket"
 	"google.golang.org/protobuf/types/known/anypb"
+	"strconv"
 )
 
 type WebSocketConfig struct {
 	Path           string
-	FromPort       uint32
-	ToPort         uint32
+	FromPort       int
+	ToPort         int
 	Id             string
 	AlterId        uint32
 	CamouflageHost string
 	Domain         string
-	CreateNum      uint32
+	CreateNum      int
 	Email          string
-	ramPort        *ramPort
+	ports          *list.List
+	context        *core2.Context
+	showPorts      []int
 }
 
-type ramPort struct {
-	fromPort    uint32
-	createNum   uint32
-	toPort      uint32
-	perFromPort uint32
-}
+func CreateWebSocketConfig(context *core2.Context) (*WebSocketConfig, error) {
+	domain, err := context.ReadString("vmess_ws", "domain")
+	if err != nil {
+		return nil, err
+	}
+	email, err := context.ReadString("vmess_ws", "email")
+	if err != nil {
+		return nil, err
+	}
 
-func CreateWebSocketConfig(domain string, email string, FromPort uint32, ToPort uint32, createNum uint32) *WebSocketConfig {
+	start, end, err := context.ReadRangeInt("vmess_ws", "range_port")
+	if err != nil {
+		return nil, err
+	}
+	createNum, err := context.ReadInt("vmess_ws", "create_num")
+	if err != nil {
+		return nil, err
+	}
 	uuid := uuid.New()
 	return &WebSocketConfig{
-		FromPort: FromPort,
-		ToPort:   ToPort,
-		Path:     "/coke/",
-		AlterId:  0,
-		Id:       uuid.String(),
-		Domain:   domain,
-		Email:    email,
-		ramPort:  &ramPort{fromPort: FromPort, createNum: createNum, toPort: 0},
-	}
-}
-func (wsc *WebSocketConfig) getRamPort() *ramPort {
-	rp := wsc.ramPort
-	if rp.toPort == 0 {
-		rp.perFromPort = rp.fromPort
-		rp.toPort = rp.perFromPort + (rp.createNum - 1)
-	} else {
-		rp.fromPort = rp.perFromPort
-		rp.perFromPort = rp.fromPort + rp.createNum
-		rp.toPort = rp.perFromPort + (rp.createNum - 1)
-	}
-	if rp.toPort > wsc.ToPort {
-		rp.fromPort = wsc.FromPort
-		rp.toPort = rp.fromPort + (rp.createNum - 1)
-	}
-	return wsc.ramPort
-}
-func (wsc *WebSocketConfig) getPortRanges() []*net.PortRange {
-	ramPort := wsc.getRamPort()
-	pr := &net.PortRange{From: ramPort.perFromPort, To: ramPort.toPort}
-	portRanges := util.GetNoUsePort(pr)
-	if ramPort.fromPort < ramPort.perFromPort {
-		portRanges = append(portRanges, &net.PortRange{From: ramPort.fromPort, To: ramPort.perFromPort - 1})
-	}
-	return portRanges
-}
-func (wsc *WebSocketConfig) toWsConfig(portRange *net.PortRange) *wsConfig {
-	return &wsConfig{Path: wsc.Path, FromPort: portRange.From, ToPort: portRange.To, Id: wsc.Id}
+		FromPort:  start,
+		ToPort:    end,
+		AlterId:   0,
+		Id:        uuid.String(),
+		Domain:    domain,
+		Email:     email,
+		CreateNum: createNum,
+		context:   context,
+		ports:     new(list.List),
+	}, nil
 }
 
 type wsConfig struct {
-	Path     string
-	FromPort uint32
-	ToPort   uint32
-	Key      string
-	Id       string
+	Path string
+	Id   string
+	Port int
 }
 
-func getWebSocketInboundHandlerConfigs(webSocketConfig *WebSocketConfig, pem []byte, key []byte) ([]*core.InboundHandlerConfig, []*net.PortRange, error) {
+func (ws *WebSocketConfig) flushPort() error {
+	readInt, err := ws.context.ReadInt("web", "port")
+	if err != nil {
+		return err
+	}
+	if ws.ports.Len() == 0 {
+		ws.showPorts = util.GetNoUsePort(ws.FromPort, ws.ToPort, ws.CreateNum, []int{readInt})
+		for _, port := range ws.showPorts {
+			ws.ports.PushBack(port)
+		}
+	} else {
+		ws.showPorts = util.GetNoUsePort(ws.FromPort, ws.ToPort, ws.CreateNum, []int{readInt})
+		for _, port := range ws.showPorts {
+			ws.ports.PushBack(port)
+		}
+	}
+	for {
+		if ws.ports.Len() <= (ws.CreateNum * 2) {
+			break
+		} else {
+			ws.ports.Remove(ws.ports.Front())
+		}
+	}
+
+	return err
+}
+func (ws *WebSocketConfig) getPorts() []int {
+
+	return ws.showPorts
+}
+
+func (ws *WebSocketConfig) toWsConfig(port int) *wsConfig {
+	return &wsConfig{Path: "/coke_" + strconv.Itoa(port) + "/", Id: ws.Id, Port: port}
+}
+
+func getWebSocketInboundHandlerConfigs(webSocketConfig *WebSocketConfig, pem []byte, key []byte) ([]*core.InboundHandlerConfig, error) {
 	inboundHandlerConfigs := make([]*core.InboundHandlerConfig, 0)
-	portRanges := webSocketConfig.getPortRanges()
-	for _, portRange := range portRanges {
-		InboundHandlerConfig, err := getWebSocketInboundHandlerConfig(webSocketConfig.toWsConfig(portRange), pem, key)
+	for ele := webSocketConfig.ports.Front(); ele != nil; ele = ele.Next() {
+		port := ele.Value.(int)
+		ws := webSocketConfig.toWsConfig(port)
+		InboundHandlerConfig, err := getWebSocketInboundHandlerConfig(ws, pem, key)
 		if err != nil {
-			return nil, portRanges, err
+			return nil, err
 		}
 		inboundHandlerConfigs = append(inboundHandlerConfigs, InboundHandlerConfig)
 	}
-	return inboundHandlerConfigs, portRanges, nil
+	return inboundHandlerConfigs, nil
 }
 func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig, pem []byte, key []byte) (*core.InboundHandlerConfig, error) {
 	userID := webSocketConfig.Id
 	inboundHandlerConfig := &core.InboundHandlerConfig{
 		ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
 			PortRange: &net.PortRange{
-				From: webSocketConfig.FromPort,
-				To:   webSocketConfig.ToPort,
+				From: uint32(webSocketConfig.Port),
+				To:   uint32(webSocketConfig.Port),
 			},
 			Listen: net.NewIPOrDomain(net.AnyIP),
 			StreamSettings: &internet.StreamConfig{
@@ -145,16 +167,16 @@ func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig, pem []byte, key
 	return inboundHandlerConfig, nil
 }
 
-func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*core.Instance, []*net.PortRange, error) {
+func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*core.Instance, error) {
 
 	pem, key, err := cert.LoadCertPem(webSocketConfig.Domain, webSocketConfig.Email, "", 80)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	inboundHandlerConfigs, portRanges, err := getWebSocketInboundHandlerConfigs(webSocketConfig, pem, key)
+	inboundHandlerConfigs, err := getWebSocketInboundHandlerConfigs(webSocketConfig, pem, key)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	serverConfig := &core.Config{
 		App: []*anypb.Any{
@@ -171,7 +193,7 @@ func CreateWebSocketServer(webSocketConfig *WebSocketConfig) (*core.Instance, []
 	}
 	instance, err := core.New(serverConfig)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return instance, portRanges, nil
+	return instance, nil
 }
