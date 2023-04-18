@@ -22,7 +22,7 @@ jobs:
         go-version: 1.19
 
     - name: Build
-      run: go build -v ./...
+      run: go build -v v2rayAuto github.com/chuccp/v2rayAuto
 
     - name: Test
-      run: go test -v ./...
+      run: go test -v v2rayAuto github.com/chuccp/v2rayAuto
