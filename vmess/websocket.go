@@ -154,7 +154,6 @@ func getWebSocketInboundHandlerConfig(webSocketConfig *wsConfig, pem []byte, key
 						Certificate: []*tls.Certificate{{
 							Certificate: pem,
 							Key:         key,
-							Usage:       tls.Certificate_AUTHORITY_ISSUE,
 						}},
 					}),
 				},
