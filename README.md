@@ -40,10 +40,6 @@ subscribe = /abc.md
 
 [vmess_ws]
 
-##是否使用当前协议
-
-open = true
-
 ##创建链接数量
 
 create_num = 5
