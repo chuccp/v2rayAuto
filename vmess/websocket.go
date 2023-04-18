@@ -43,10 +43,6 @@ func CreateWebSocketConfig(context *core2.Context) (*WebSocketConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	host, err := context.ReadString("vmess_ws", "host")
-	if err != nil {
-		return nil, err
-	}
 	email, err := context.ReadString("vmess_ws", "email")
 	if err != nil {
 		return nil, err
@@ -66,7 +62,7 @@ func CreateWebSocketConfig(context *core2.Context) (*WebSocketConfig, error) {
 		ToPort:    end,
 		AlterId:   0,
 		Id:        uuid.String(),
-		Host:      host,
+		Host:      domain,
 		Domain:    domain,
 		Email:     email,
 		CreateNum: createNum,
