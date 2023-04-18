@@ -83,7 +83,7 @@ func (f *File) OpenOrCreate() error {
 func (f *File) Exists() (flag bool, err error) {
 	err = f.open()
 	if err != nil {
-		if strings.Contains(err.Error(), "cannot find the file") {
+		if strings.Contains(err.Error(), "cannot find the file") || strings.Contains(err.Error(), "no such file or directory") {
 			return false, nil
 		}
 		return true, err
@@ -234,7 +234,7 @@ func NewFile(path string) (*File, error) {
 	}
 	fileInfo, err := os.Stat(normal)
 	if err != nil {
-		if strings.Contains(err.Error(), "cannot find the file") || strings.Contains(err.Error(), "cannot find the path") {
+		if strings.Contains(err.Error(), "no such file or directory") || strings.Contains(err.Error(), "cannot find the file") || strings.Contains(err.Error(), "cannot find the path") {
 			return &File{normal: normal}, nil
 		}
 		return nil, err

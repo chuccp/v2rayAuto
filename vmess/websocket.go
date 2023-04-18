@@ -30,6 +30,7 @@ type WebSocketConfig struct {
 	AlterId        uint32
 	CamouflageHost string
 	Domain         string
+	Host           string
 	CreateNum      int
 	Email          string
 	ports          *list.List
@@ -39,6 +40,10 @@ type WebSocketConfig struct {
 
 func CreateWebSocketConfig(context *core2.Context) (*WebSocketConfig, error) {
 	domain, err := context.ReadString("vmess_ws", "domain")
+	if err != nil {
+		return nil, err
+	}
+	host, err := context.ReadString("vmess_ws", "host")
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +66,7 @@ func CreateWebSocketConfig(context *core2.Context) (*WebSocketConfig, error) {
 		ToPort:    end,
 		AlterId:   0,
 		Id:        uuid.String(),
+		Host:      host,
 		Domain:    domain,
 		Email:     email,
 		CreateNum: createNum,

@@ -18,7 +18,6 @@ func LoadCertPem(Domain string, Email string, Path string, ValidDay int) ([]byte
 	common.Must(err)
 	keyFile, err := file.Child(keyPemFilename)
 	common.Must(err)
-
 	cerExists, err := certFile.Exists()
 	common.Must(err)
 	keyExists, err := keyFile.Exists()
