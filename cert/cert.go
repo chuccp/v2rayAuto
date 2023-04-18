@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func LoadCertPem(Domain string, Email string, Path string, ValidDay int, httpPort int, httpsPort int) ([]byte, []byte, error) {
+func LoadCertPem(Domain string, Email string, Path string, ValidDay int, httpPort int, httpsPort int) ([]byte, []byte, string, string, error) {
 
 	certPemFilename := Domain + ".cert.pem"
 	keyPemFilename := Domain + ".key.pem"
@@ -38,38 +38,38 @@ func LoadCertPem(Domain string, Email string, Path string, ValidDay int, httpPor
 	common.Must(err)
 	keyPEM, err := keyFile.ReadAll()
 	common.Must(err)
-	return certPEM, keyPEM, nil
+	return certPEM, keyPEM, certFile.Abs(), keyFile.Abs(), nil
 }
 
-func createCertPem(Domain string, Email string, certFile *util.File, keyPemFile *util.File, httpPort int, httpsPort int) ([]byte, []byte, error) {
+func createCertPem(Domain string, Email string, certFile *util.File, keyPemFile *util.File, httpPort int, httpsPort int) ([]byte, []byte, string, string, error) {
 	if util.IsIP(Domain) {
 		cert, err := GetCertificateFromSelf()
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", "", err
 		}
 		certPEM, keyPEM := cert.ToPEM()
 		err = certFile.WriteBytes(certPEM)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", "", err
 		}
 		err = keyPemFile.WriteBytes(keyPEM)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", "", err
 		}
-		return certPEM, keyPEM, nil
+		return certPEM, keyPEM, certFile.Abs(), keyPemFile.Abs(), nil
 	} else {
 		cert, err := GetCertificateFromLego([]string{Domain}, Email, httpPort, httpsPort)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", "", err
 		}
 		err = certFile.WriteBytes(cert.Certificate)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", "", err
 		}
 		err = keyPemFile.WriteBytes(cert.PrivateKey)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", "", err
 		}
-		return cert.Certificate, cert.PrivateKey, nil
+		return cert.Certificate, cert.PrivateKey, certFile.Abs(), keyPemFile.Abs(), nil
 	}
 }
