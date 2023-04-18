@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/v2fly/v2ray-core/v5/common/protocol/tls/cert"
+	"strconv"
 )
 
 type CertUser struct {
@@ -31,7 +32,7 @@ func (u *CertUser) GetPrivateKey() crypto.PrivateKey {
 	return u.key
 }
 
-func GetCertificateFromLego(domain []string, email string) (*certificate.Resource, error) {
+func GetCertificateFromLego(domain []string, email string, httpPort int, httpsPort int) (*certificate.Resource, error) {
 	// 创建myUser用户对象。新对象需要email和私钥才能启动，私钥我们自己生成
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -56,11 +57,11 @@ func GetCertificateFromLego(domain []string, email string) (*certificate.Resourc
 	}
 
 	// 这里需要挑战我们申请的证书，必须监听80和443端口，这样才能让Let's Encrypt访问到咱们的服务器
-	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "80"))
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", strconv.Itoa(httpPort)))
 	if err != nil {
 		return nil, err
 	}
-	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "443"))
+	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", strconv.Itoa(httpsPort)))
 	if err != nil {
 		return nil, err
 	}

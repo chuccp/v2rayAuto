@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"github.com/chuccp/v2rayAuto/core"
 	"github.com/gin-gonic/gin"
+	"github.com/v2fly/v2ray-core/v5/common"
 	"strconv"
 )
 
@@ -37,12 +38,10 @@ func (s *Server) Flush(c *gin.Context) {
 }
 func (s *Server) Start(context *core.Context) error {
 	s.context = context
+	subscribe := common.Must2(s.context.ReadString("web", "subscribe")).(string)
 	r := gin.Default()
-	r.GET("/d3MuY2oyMDIw.md", s.Subscribe)
-	r.GET("/d3MuY2oyMDIwFlush.md", s.Flush)
-	readInt, err := context.ReadInt("web", "port")
-	if err != nil {
-		return err
-	}
+	r.GET(subscribe, s.Subscribe)
+	r.GET(subscribe+"_flush", s.Flush)
+	readInt := common.Must2(context.ReadInt("web", "port")).(int)
 	return r.Run(":" + strconv.Itoa(readInt))
 }

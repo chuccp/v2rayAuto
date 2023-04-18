@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func LoadCertPem(Domain string, Email string, Path string, ValidDay int) ([]byte, []byte, error) {
+func LoadCertPem(Domain string, Email string, Path string, ValidDay int, httpPort int, httpsPort int) ([]byte, []byte, error) {
 
 	certPemFilename := Domain + ".cert.pem"
 	keyPemFilename := Domain + ".key.pem"
@@ -23,7 +23,7 @@ func LoadCertPem(Domain string, Email string, Path string, ValidDay int) ([]byte
 	keyExists, err := keyFile.Exists()
 	common.Must(err)
 	if !cerExists || !keyExists {
-		return createCertPem(Domain, Email, certFile, keyFile)
+		return createCertPem(Domain, Email, certFile, keyFile, httpPort, httpsPort)
 	}
 
 	certTime, err := certFile.ModTime()
@@ -32,7 +32,7 @@ func LoadCertPem(Domain string, Email string, Path string, ValidDay int) ([]byte
 	common.Must(err)
 	t := time.Now()
 	if certTime.Add(time.Hour*time.Duration(ValidDay*24)).Before(t) || keyTime.Add(time.Hour*time.Duration(ValidDay*24)).Before(t) {
-		return createCertPem(Domain, Email, certFile, keyFile)
+		return createCertPem(Domain, Email, certFile, keyFile, httpPort, httpsPort)
 	}
 	certPEM, err := certFile.ReadAll()
 	common.Must(err)
@@ -41,7 +41,7 @@ func LoadCertPem(Domain string, Email string, Path string, ValidDay int) ([]byte
 	return certPEM, keyPEM, nil
 }
 
-func createCertPem(Domain string, Email string, certFile *util.File, keyPemFile *util.File) ([]byte, []byte, error) {
+func createCertPem(Domain string, Email string, certFile *util.File, keyPemFile *util.File, httpPort int, httpsPort int) ([]byte, []byte, error) {
 	if util.IsIP(Domain) {
 		cert, err := GetCertificateFromSelf()
 		if err != nil {
@@ -58,7 +58,7 @@ func createCertPem(Domain string, Email string, certFile *util.File, keyPemFile 
 		}
 		return certPEM, keyPEM, nil
 	} else {
-		cert, err := GetCertificateFromLego([]string{Domain}, Email)
+		cert, err := GetCertificateFromLego([]string{Domain}, Email, httpPort, httpsPort)
 		if err != nil {
 			return nil, nil, err
 		}

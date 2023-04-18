@@ -11,10 +11,11 @@ import (
 type WsServer struct {
 	instance        *core.Instance
 	webSocketConfig *WebSocketConfig
+	context         *c.Context
 }
 
 func (s *WsServer) Start(context *c.Context) (err error) {
-
+	s.context = context
 	s.webSocketConfig, err = CreateWebSocketConfig(context)
 	if err != nil {
 		return
@@ -45,14 +46,15 @@ func (s *WsServer) GetKey() string {
 }
 func (s *WsServer) GetClient() []string {
 	urls := make([]string, 0)
+	host := s.context.GetHost()
 	for _, port := range s.webSocketConfig.getPorts() {
-		name := s.webSocketConfig.Host + "" + strconv.Itoa(port)
+		name := host + ":" + strconv.Itoa(port)
 		config := "{\"v\":\"2\",\"ps\":\"  " +
 			name + "   \",\"add\":\"" +
-			s.webSocketConfig.Host + "\",\"port\":\"" +
+			host + "\",\"port\":\"" +
 			strconv.Itoa(port) + "\",\"id\":\"" +
 			s.webSocketConfig.Id + "\",\"aid\":\"0\",\"scy\":\"auto\",\"net\":\"ws\",\"type\":\"none\",\"host\":\"" +
-			s.webSocketConfig.Host + "\",\"path\":\"" + "/coke_" + strconv.Itoa(port) + "/" + "\",\"tls\":\"tls\",\"sni\":\"\",\"alpn\":\"\",\"fp\":\"\",\"allowInsecure\":true}"
+			host + "\",\"path\":\"" + "/coke_" + strconv.Itoa(port) + "/" + "\",\"tls\":\"tls\",\"sni\":\"\",\"alpn\":\"\",\"fp\":\"\",\"allowInsecure\":true}"
 		url := "vmess://" + base64.StdEncoding.EncodeToString([]byte(config))
 		urls = append(urls, url)
 	}
