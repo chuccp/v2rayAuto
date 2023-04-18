@@ -4,6 +4,7 @@ import (
 	"github.com/chuccp/v2rayAuto/config"
 	"github.com/robfig/cron/v3"
 	"github.com/v2fly/v2ray-core/v5/common"
+	"log"
 	"sync"
 )
 
@@ -19,6 +20,12 @@ func (v *V2ray) RegisterServer(server Server) {
 func (v *V2ray) RangeServer(f func(server Server)) {
 	v.context.RangeServer(f)
 }
+
+func (v *V2ray) createCert() {
+	log.Println("证书生成")
+	v.context.createCert()
+}
+
 func (v *V2ray) Start() error {
 	v.RangeServer(func(server Server) {
 		err := server.Start(v.context)

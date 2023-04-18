@@ -2,18 +2,28 @@ package core
 
 import (
 	"github.com/chuccp/v2rayAuto/config"
+	"github.com/v2fly/v2ray-core/v5/transport/internet/tls"
 	"strconv"
 	"strings"
 	"sync"
 )
 
 type Context struct {
-	serverMap *sync.Map
-	config    *config.Config
+	serverMap   *sync.Map
+	config      *config.Config
+	certificate *tls.Certificate
 }
 
 func (v *Context) RegisterServer(server Server) {
 	v.serverMap.LoadOrStore(server.GetKey(), server)
+}
+
+func (v *Context) getCertificate() *tls.Certificate {
+	return v.certificate
+}
+
+func (v *Context) createCert() {
+
 }
 
 func (v *Context) ReadString(section string, key string) (string, error) {
