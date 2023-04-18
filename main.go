@@ -10,7 +10,6 @@ import (
 	"github.com/v2fly/v2ray-core/v5/common"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -51,17 +50,12 @@ func main() {
 	if len(args) > 1 {
 		cmd = args[1]
 	}
-	//dir, _ := os.Getwd()
-	fmt.Println("===============================")
-	fmt.Println(path.Base(args[0]))
-
 	dir, file := filepath.Split(args[0])
 	fmt.Println(dir, "====================", file)
 	switch cmd {
-
 	case "start":
 		{
-			cmd := exec.Command(args[0], "run", "-name-v2rayAuto")
+			cmd := exec.Command(args[0], "run")
 			err := cmd.Start()
 			common.Must(err)
 		}
