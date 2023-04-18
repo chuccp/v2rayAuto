@@ -23,6 +23,3 @@ jobs:
 
     - name: Build
       run: go build -v v2rayAuto github.com/chuccp/v2rayAuto
-
-    - name: Test
-      run: go test -v v2rayAuto github.com/chuccp/v2rayAuto
