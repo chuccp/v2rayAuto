@@ -52,7 +52,7 @@ email = cooge123@gmail.com
 
 port = 8336
 
-##订阅地址
+##订阅地址路径 例子 https://127.0.0.1/abc.md
 
 subscribe = /abc.md
 
