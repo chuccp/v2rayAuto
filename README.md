@@ -33,6 +33,7 @@ v2rayAuto run
 range_port = 8390-9000
 
 ##要访问的域名
+
 host = 127.0.0.1
 
 [tls]
