@@ -2,9 +2,9 @@ name: Release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -122,8 +122,8 @@ jobs:
       - name: Upload ZIP file to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
-          path: v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
+          name: v2rayAuto.zip
+          path: v2rayAuto.zip
 
       - name: Upload files to GitHub release
         uses: svenstaro/upload-release-action@v2
@@ -131,5 +131,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
-          file: ./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
+          file: ./v2rayAuto.zip*
           tag: ${{ github.ref }}
