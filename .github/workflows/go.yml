@@ -53,8 +53,11 @@ jobs:
           echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, RELEASE_NAME: $_NAME $ASSET_NAME"
           echo "ASSET_NAME=$_NAME" >> $GITHUB_OUTPUT
           echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
+      - name: Build V2RayAuto
+        run: |
+          mkdir -p build_assets
       - name: Prepare package
-        run: cp -v config.ini ./build_assets    
+        run: cp -v config.ini ./build_assets
       - name: Create ZIP archive
         run: |
           pushd build_assets || exit 1
