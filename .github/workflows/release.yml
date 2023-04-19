@@ -63,7 +63,7 @@ jobs:
           mkdir -p build_assets
           go build -v -o build_assets/v2rayAuto -trimpath -ldflags "-s -w -buildid=" .
 
-      - name: Rename Windows V2Ray
+      - name: Rename Windows v2rayAuto
         if: matrix.goos == 'windows'
         run: |
           cd ./build_assets || exit 1
