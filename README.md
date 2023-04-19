@@ -8,6 +8,8 @@
 
 目前实现 websocket+tls+vmess。使用前需要申请域名
 
+有问题 请加入 https://t.me/+POaWrs8YGFQ4MDdl
+
 下载发布包至服务器解压
 
 运行
