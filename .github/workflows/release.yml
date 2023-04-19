@@ -5,6 +5,9 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
@@ -23,8 +26,6 @@ jobs:
           # BEGIN Other architectures
           - goos: linux
             goarch: arm64
-          - goos: linux
-            goarch: riscv64
           - goos: windows
             goarch: arm64
           # END Other architectures
@@ -76,9 +77,9 @@ jobs:
       - name: Create ZIP archive
         run: |
           pushd build_assets || exit 1
-          zip -9vr ../v2rayAuto-$ASSET_NAME.zip .
+          zip -9vr ../v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip .
           popd || exit 1
-          FILE=./v2rayAuto-$ASSET_NAME.zip
+          FILE=./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
           DGST=$FILE.dgst
           openssl dgst -md5    $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha1   $FILE | sed 's/([^)]*)//g' >>$DGST
@@ -88,14 +89,13 @@ jobs:
       - name: Upload ZIP file to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: v2rayAuto-$ASSET_NAME.zip
-          path: v2rayAuto-$ASSET_NAME.zip
+          name: v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
+          path: v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
 
       - name: Upload files to GitHub release
         uses: svenstaro/upload-release-action@v2
-        if: github.event_name == 'release'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
-          file: ./v2rayAuto-$ASSET_NAME.zip*
+          file: ./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
           tag: ${{ github.ref }}
