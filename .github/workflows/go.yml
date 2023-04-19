@@ -69,9 +69,15 @@ jobs:
           openssl dgst -sha1   $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha256 $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha512 $FILE | sed 's/([^)]*)//g' >>$DGST
+          
+      - name: Upload ZIP file to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
+          path: v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
+
       - name: Upload files to GitHub release
         uses: svenstaro/upload-release-action@v2
-        if: github.event_name == 'release'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
