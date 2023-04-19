@@ -58,9 +58,9 @@ jobs:
       - name: Create ZIP archive
         run: |
           pushd build_assets || exit 1
-          zip -9vr ../v2rayAuto-$ASSET_NAME.zip .
+          zip -9vr ../v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip .
           popd || exit 1
-          FILE=./v2rayAuto-$ASSET_NAME.zip
+          FILE=./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
           DGST=$FILE.dgst
           openssl dgst -md5    $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha1   $FILE | sed 's/([^)]*)//g' >>$DGST
