@@ -46,6 +46,7 @@ jobs:
         id: get_filename
         run: |
           export _NAME=$GOOS-$GOARCH
+          export ASSET_NAME=$_NAME
           echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, RELEASE_NAME: $_NAME"
           echo "ASSET_NAME=$_NAME" >> $GITHUB_OUTPUT
           echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
@@ -63,7 +64,7 @@ jobs:
           mkdir -p build_assets
           go build -v -o build_assets/v2rayAuto -trimpath -ldflags "-s -w -buildid=" .
 
-      - name: Rename Windows V2Ray
+      - name: Rename Windows v2rayAuto
         if: matrix.goos == 'windows'
         run: |
           cd ./build_assets || exit 1
