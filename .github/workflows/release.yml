@@ -1,25 +1,10 @@
 name: Release
 
 on:
-  release:
-    types: [prereleased]
   push:
-    branches:
-      - master
-      - v*
-      - dev*
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".github/workflows/*.yml"
+    branches: [ "main" ]
   pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".github/workflows/*.yml"
+    branches: [ "main" ]
 
 jobs:
   build:
