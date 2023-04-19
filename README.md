@@ -8,6 +8,20 @@
 
 目前实现 websocket+tls+vmess。使用前需要申请域名
 
+下载发布包至服务器解压
+
+运行
+
+v2rayAuto start
+
+停止
+
+v2rayAuto stop
+
+使用命令窗口运行
+
+v2rayAuto run
+
 配置文件 config.ini 说明
 
 [core]
@@ -16,6 +30,7 @@
 
 range_port = 8390-9000
 
+##要访问的域名
 host = 127.0.0.1
 
 [tls]
