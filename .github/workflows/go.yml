@@ -69,7 +69,7 @@ jobs:
           openssl dgst -sha1   $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha256 $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha512 $FILE | sed 's/([^)]*)//g' >>$DGST
-          
+
       - name: Upload ZIP file to Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -81,5 +81,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
-          file: ./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
+          file: ./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
           tag: ${{ github.ref }}
