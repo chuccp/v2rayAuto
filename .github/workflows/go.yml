@@ -69,3 +69,10 @@ jobs:
           openssl dgst -sha1   $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha256 $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha512 $FILE | sed 's/([^)]*)//g' >>$DGST
+      - name: Upload files to GitHub release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: ./v2rayAuto-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
+          tag: ${{ github.ref }}
