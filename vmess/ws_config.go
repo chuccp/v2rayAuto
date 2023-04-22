@@ -1,9 +1,7 @@
 package vmess
 
 import (
-	"container/list"
 	core2 "github.com/chuccp/v2rayAuto/core"
-	"github.com/chuccp/v2rayAuto/util"
 	core "github.com/v2fly/v2ray-core/v5"
 	"github.com/v2fly/v2ray-core/v5/app/dispatcher"
 	"github.com/v2fly/v2ray-core/v5/app/proxyman"
@@ -22,33 +20,26 @@ import (
 )
 
 type WebSocketConfig struct {
-	Path           string
-	FromPort       int
-	ToPort         int
-	Id             string
-	AlterId        uint32
-	CamouflageHost string
-	CreateNum      int
-	ports          *list.List
-	context        *core2.Context
-	showPorts      []int
+	*core2.PortConfig
+	Path      string
+	Id        string
+	AlterId   uint32
+	CreateNum int
+	context   *core2.Context
 }
 
 func CreateWebSocketConfig(context *core2.Context) (*WebSocketConfig, error) {
-	portRange := context.GetPortRange()
 	createNum, err := context.ReadInt("vmess_ws", "create_num")
 	if err != nil {
 		return nil, err
 	}
 	uuid := uuid.New()
 	return &WebSocketConfig{
-		FromPort:  int(portRange.From),
-		ToPort:    int(portRange.To),
-		AlterId:   0,
-		Id:        uuid.String(),
-		CreateNum: createNum,
-		context:   context,
-		ports:     new(list.List),
+		AlterId:    0,
+		Id:         uuid.String(),
+		CreateNum:  createNum,
+		context:    context,
+		PortConfig: core2.NewPortConfig(context),
 	}, nil
 }
 
@@ -58,42 +49,13 @@ type wsConfig struct {
 	Port int
 }
 
-func (ws *WebSocketConfig) flushPort() error {
-	readInt, err := ws.context.ReadInt("web", "port")
-	if ws.ports.Len() == 0 {
-		ws.showPorts = util.GetNoUsePort(ws.FromPort, ws.ToPort, ws.CreateNum, []int{readInt})
-		for _, port := range ws.showPorts {
-			ws.ports.PushBack(port)
-		}
-	} else {
-		ws.showPorts = util.GetNoUsePort(ws.FromPort, ws.ToPort, ws.CreateNum, []int{readInt})
-		for _, port := range ws.showPorts {
-			ws.ports.PushBack(port)
-		}
-	}
-	for {
-		if ws.ports.Len() <= (ws.CreateNum * 2) {
-			break
-		} else {
-			ws.ports.Remove(ws.ports.Front())
-		}
-	}
-
-	return err
-}
-func (ws *WebSocketConfig) getPorts() []int {
-
-	return ws.showPorts
-}
-
 func (ws *WebSocketConfig) toWsConfig(port int) *wsConfig {
 	return &wsConfig{Path: "/coke_" + strconv.Itoa(port) + "/", Id: ws.Id, Port: port}
 }
 
 func (ws *WebSocketConfig) getWebSocketInboundHandlerConfigs(webSocketConfig *WebSocketConfig) ([]*core.InboundHandlerConfig, error) {
 	inboundHandlerConfigs := make([]*core.InboundHandlerConfig, 0)
-	for ele := webSocketConfig.ports.Front(); ele != nil; ele = ele.Next() {
-		port := ele.Value.(int)
+	for _, port := range ws.GetPorts() {
 		wss := webSocketConfig.toWsConfig(port)
 		InboundHandlerConfig, err := ws.getWebSocketInboundHandlerConfig(wss)
 		if err != nil {
@@ -125,7 +87,7 @@ func (ws *WebSocketConfig) getWebSocketInboundHandlerConfig(webSocketConfig *wsC
 				SecurityType: serial.GetMessageType(&tls.Config{}),
 				SecuritySettings: []*anypb.Any{
 					serial.ToTypedMessage(&tls.Config{
-						Certificate: []*tls.Certificate{ws.context.GetCertificate()},
+						Certificate: []*tls.Certificate{ws.context.GetCertificate().Certificate},
 					}),
 				},
 			}}),

@@ -17,6 +17,11 @@ func (c *Config) ReadString(section string, key string) (string, error) {
 	}
 	return st.Key(key).String(), nil
 }
+
+func (c *Config) HasSection(section string) bool {
+	return c.file.HasSection(section)
+}
+
 func (c *Config) ReadInt(section string, key string) (int, error) {
 	log.Println("读取配置文件 section:", section, "key:", key)
 	st, err := c.file.GetSection(section)

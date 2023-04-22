@@ -18,19 +18,12 @@ type Context struct {
 	certificate *tls.Certificate
 	portRange   *net.PortRange
 	host        string
+	port        int
 }
 
-func (v *Context) GetHost() string {
-	if len(v.host) > 0 {
-		return v.host
-	}
+func (v *Context) initConfig() {
 	v.host = common.Must2(v.ReadString("core", "host")).(string)
-	return v.host
-}
-func (v *Context) GetPortRange() *net.PortRange {
-	if v.portRange != nil {
-		return v.portRange
-	}
+	v.port = common.Must2(v.ReadInt("core", "port")).(int)
 	from, to, err := v.ReadRangeInt("core", "range_port")
 	common.Must(err)
 	if to > from {
@@ -38,28 +31,42 @@ func (v *Context) GetPortRange() *net.PortRange {
 	} else {
 		v.portRange = &net.PortRange{To: uint32(from), From: uint32(to)}
 	}
-	return v.portRange
 }
+
+func (v *Context) GetHost() string {
+	return v.host
+}
+func (v *Context) GetPort() int {
+	return v.port
+}
+func (v *Context) GetNoUsePorts(createNum int) []int {
+	return util.GetNoUsePort(int(v.portRange.From), int(v.portRange.To), createNum, []int{v.port})
+}
+
 func (v *Context) RegisterServer(server Server) {
 	v.serverMap.LoadOrStore(server.GetKey(), server)
 }
 
-func (v *Context) GetCertificate() *tls.Certificate {
-	return common.Must2(v.createCert()).(*tls.Certificate)
+func (v *Context) GetCertificate() *cert.Certificate {
+	return common.Must2(v.createCert()).(*cert.Certificate)
 }
 
-func (v *Context) createCert() (*tls.Certificate, error) {
-	pr := v.GetPortRange()
-	ports := util.GetNoUsePort(int(pr.From), int(pr.To), 2, []int{})
-	domain := common.Must2(v.ReadString("tls", "domain"))
-	email := common.Must2(v.ReadString("tls", "email"))
-	pem, key, c, k, err := cert.LoadCertPem(domain.(string), email.(string), "", 80, ports[0], ports[1])
-	return &tls.Certificate{Certificate: pem, Key: key, CertificateFile: c, KeyFile: k}, err
+func (v *Context) createCert() (*cert.Certificate, error) {
+	ports := v.GetNoUsePorts(2)
+	domain := common.Must2(v.ReadString("tls", "domain")).(string)
+	email := common.Must2(v.ReadString("tls", "email")).(string)
+	pem, key, c, k, err := cert.LoadCertPem(domain, email, "", 80, ports[0], ports[1])
+	return cert.NewCertificate(&tls.Certificate{Certificate: pem, Key: key, CertificateFile: c, KeyFile: k}, domain), err
 }
 
 func (v *Context) ReadString(section string, key string) (string, error) {
 	return v.config.ReadString(section, key)
 }
+
+func (v *Context) HasSection(section string) bool {
+	return v.config.HasSection(section)
+}
+
 func (v *Context) ReadInt(section string, key string) (int, error) {
 	return v.config.ReadInt(section, key)
 }

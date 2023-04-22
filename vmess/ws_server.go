@@ -24,7 +24,7 @@ func (s *WsServer) Start(context *c.Context) (err error) {
 	return
 }
 func (s *WsServer) Flush() (err error) {
-	s.webSocketConfig.flushPort()
+	s.webSocketConfig.FlushPort(s.webSocketConfig.CreateNum)
 	if s.instance != nil {
 		err = s.instance.Close()
 		if err != nil {
@@ -46,8 +46,8 @@ func (s *WsServer) GetKey() string {
 }
 func (s *WsServer) GetClient() []string {
 	urls := make([]string, 0)
-	host := s.context.GetHost()
-	for _, port := range s.webSocketConfig.getPorts() {
+	host := s.context.GetCertificate().Domain
+	for _, port := range s.webSocketConfig.GetShowPorts() {
 		name := host + ":" + strconv.Itoa(port)
 		config := "{\"v\":\"2\",\"ps\":\"  " +
 			name + "   \",\"add\":\"" +

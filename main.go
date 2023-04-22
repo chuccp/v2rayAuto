@@ -18,7 +18,7 @@ import (
 func run() {
 	readConfig, err := config.ReadConfig("config.ini")
 	common.Must(err)
-	v2 := core.LoadConfig(readConfig, &api.Server{})
+	v2 := core.New(readConfig, &api.Server{})
 	v2.RegisterServer(&vmess.WsServer{})
 	err = v2.Start()
 	common.Must(err)

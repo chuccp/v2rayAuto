@@ -27,6 +27,7 @@ func (v *V2ray) createCert() {
 }
 
 func (v *V2ray) Start() error {
+	v.context.initConfig()
 	v.RangeServer(func(server Server) {
 		err := server.Start(v.context)
 		common.Must(err)
@@ -42,7 +43,7 @@ func (v *V2ray) Start() error {
 	v.apiServer.Start(v.context)
 	return nil
 }
-func LoadConfig(config *config.Config, apiServer ApiServer) *V2ray {
+func New(config *config.Config, apiServer ApiServer) *V2ray {
 	v := &V2ray{apiServer: apiServer, config: config, context: &Context{config: config, serverMap: new(sync.Map)}}
 	return v
 }

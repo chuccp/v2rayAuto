@@ -38,12 +38,11 @@ func (s *Server) Flush(c *gin.Context) {
 }
 func (s *Server) Start(context *core.Context) error {
 	s.context = context
-	subscribe := common.Must2(s.context.ReadString("web", "subscribe")).(string)
+	subscribe := common.Must2(s.context.ReadString("core", "subscribe")).(string)
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 	r.GET(subscribe, s.Subscribe)
 	r.GET(subscribe+"_flush", s.Flush)
-	readInt := common.Must2(context.ReadInt("web", "port")).(int)
 	cer := context.GetCertificate()
-	return r.RunTLS(":"+strconv.Itoa(readInt), cer.CertificateFile, cer.KeyFile)
+	return r.RunTLS(":"+strconv.Itoa(s.context.GetPort()), cer.CertificateFile, cer.KeyFile)
 }
