@@ -28,7 +28,7 @@ subscribe = /abc.md\
 ##随机端口范围\
 range_port = 8390-9000\
 ##申请证书的邮件\
-email = cooge123@gmail.com\
+email = XXXXXXX@gmail.com\
 [vmess_ws]\
 ##创建链接数量\
 create_num = 5
