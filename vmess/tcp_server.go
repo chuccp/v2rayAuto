@@ -6,6 +6,23 @@ import (
 )
 
 type TcpServer struct {
-	instance *core.Instance
-	context  *c.Context
+	instance  *core.Instance
+	context   *c.Context
+	tcpConfig *TcpConfig
+}
+
+func (s *TcpServer) Start(context *c.Context) error {
+	return nil
+}
+func (s *TcpServer) Close() error {
+	return nil
+}
+func (s *TcpServer) Flush() error {
+	return nil
+}
+func (s *TcpServer) GetKey() string {
+	return "vmess_tcp"
+}
+func (s *TcpServer) GetClient() []string {
+	return nil
 }

@@ -2,11 +2,14 @@ package cert
 
 import (
 	"github.com/chuccp/v2rayAuto/util"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/v2fly/v2ray-core/v5/common"
 	"time"
 )
 
 func LoadCertPem(Domain string, Email string, Path string, ValidDay int, httpPort int, httpsPort int) ([]byte, []byte, string, string, error) {
+
+	log.Println("Domain:", Domain, " httpPort:", httpPort, "  httpsPort:", httpsPort)
 
 	certPemFilename := Domain + ".cert.pem"
 	keyPemFilename := Domain + ".key.pem"

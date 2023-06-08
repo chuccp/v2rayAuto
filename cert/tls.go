@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/v2fly/v2ray-core/v5/common"
 	"github.com/v2fly/v2ray-core/v5/common/protocol/tls/cert"
 	"strconv"
 )
@@ -57,31 +58,21 @@ func GetCertificateFromLego(domain []string, email string, httpPort int, httpsPo
 	}
 
 	// 这里需要挑战我们申请的证书，必须监听80和443端口，这样才能让Let's Encrypt访问到咱们的服务器
-	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", strconv.Itoa(httpPort)))
-	if err != nil {
-		return nil, err
-	}
-	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", strconv.Itoa(httpsPort)))
-	if err != nil {
-		return nil, err
-	}
-
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", strconv.Itoa(80)))
+	common.Must(err)
+	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", strconv.Itoa(443)))
+	common.Must(err)
 	// 把这个客户端注册，传递给myUser用户里
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
-	if err != nil {
-		return nil, err
-	}
+	common.Must(err)
 	myUser.Registration = reg
-
 	request := certificate.ObtainRequest{
 		Domains: domain, // 这里如果有多个，就写多个就好了，可以是多个域名
 		Bundle:  true,   // 这里如果是true，将把颁发者证书一起返回，也就是返回里面certificates.IssuerCertificate
 	}
 	// 开始申请证书
 	certificates, err := client.Certificate.Obtain(request)
-	if err != nil {
-		return nil, err
-	}
+	common.Must(err)
 	// 申请完了后，里面会带有证书的PrivateKey Certificate，都为[]byte格式，需要存储的自行转为string即可
 	return certificates, nil
 }
