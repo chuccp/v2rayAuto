@@ -20,7 +20,7 @@ v2rayAuto run\
 配置文件 config.ini 说明\
 [core]\
 ##访问域名 证书申请需80或443端口，且不被占用\
-host = www.baidu.com\
+host = www.baidu.com \
 ##订阅端口，不要与其它端口冲突\
 port = 8005\
 ##订阅地址路径，建议写复杂一些，避免被其他人获取 例子 https://127.0.0.1:8336/abc.md  \
