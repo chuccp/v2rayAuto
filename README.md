@@ -18,21 +18,17 @@ v2rayAuto stop\
 使用命令窗口运行\
 v2rayAuto run\
 配置文件 config.ini 说明\
-`[core]`\
-`##随机端口范围`\
-`range_port = 8390-9000`\
-`##要访问的域名`\
-`host = 127.0.0.1`\
-`[tls]`\
-`##申请证书的域名`\
-`domain = 127.0.0.1`\
-`##申请证书的邮件`\
-`email = `[`cooge123@gmail.com`](mailto\:cooge123@gmail.com)\
-`[web]`\
-`##订阅端口，不要与其它端口冲突`\
-`port = 8336`\
-`##订阅地址路径 建议写复杂一些，避免被其他人获取 例子 `[`https://127.0.0.1:8336/abc.md`](https://127.0.0.1:8336/abc.md)\
-`subscribe = /abc.md`\
-`[vmess_ws]`\
-`##创建链接数量`\
-`create_num = 5`
+[core]\
+##访问域名 证书申请需80或443端口，且不被占用\
+host = www.baidu.com\
+##订阅端口，不要与其它端口冲突\
+port = 8005\
+##订阅地址路径，建议写复杂一些，避免被其他人获取 例子 https://127.0.0.1:8336/abc.md  \
+subscribe = /abc.md\
+##随机端口范围\
+range_port = 8390-9000\
+##申请证书的邮件\
+email = cooge123@gmail.com\
+[vmess_ws]\
+##创建链接数量\
+create_num = 5
