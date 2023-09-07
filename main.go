@@ -10,9 +10,11 @@ import (
 	"github.com/v2fly/v2ray-core/v5/common"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"syscall"
 )
 
 func run() {
@@ -22,6 +24,9 @@ func run() {
 	v2.RegisterServer(&vmess.WsServer{})
 	err = v2.Start()
 	common.Must(err)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGBUS)
+	<-sig
 }
 func kill(name string) {
 	processes, err := ps.Processes()

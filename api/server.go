@@ -6,11 +6,13 @@ import (
 	"github.com/chuccp/v2rayAuto/core"
 	"github.com/gin-gonic/gin"
 	"github.com/v2fly/v2ray-core/v5/common"
+	"net/http"
 	"strconv"
 )
 
 type Server struct {
-	context *core.Context
+	context    *core.Context
+	httpServer *http.Server
 }
 
 func (s *Server) Subscribe(c *gin.Context) {
@@ -38,11 +40,18 @@ func (s *Server) Flush(c *gin.Context) {
 }
 func (s *Server) Start(context *core.Context) error {
 	s.context = context
+	if s.httpServer != nil {
+		err := s.httpServer.Close()
+		if err != nil {
+			return err
+		}
+	}
 	subscribe := common.Must2(s.context.ReadString("core", "subscribe")).(string)
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 	r.GET(subscribe, s.Subscribe)
 	r.GET(subscribe+"_flush", s.Flush)
 	cer := context.GetCertificate()
-	return r.RunTLS(":"+strconv.Itoa(s.context.GetPort()), cer.CertificateFile, cer.KeyFile)
+	s.httpServer = &http.Server{Addr: ":" + strconv.Itoa(s.context.GetPort()), Handler: r}
+	return s.httpServer.ListenAndServeTLS(cer.CertificateFile, cer.KeyFile)
 }

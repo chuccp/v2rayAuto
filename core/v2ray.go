@@ -32,15 +32,22 @@ func (v *V2ray) Start() error {
 		err := server.Start(v.context)
 		common.Must(err)
 	})
+	go func() {
+		err := v.apiServer.Start(v.context)
+		common.Must(err)
+	}()
 	cr := cron.New(cron.WithSeconds())
 	cr.AddFunc("0 0 0 * * *", func() {
 		v.RangeServer(func(server Server) {
 			err := server.Flush()
 			common.Must(err)
 		})
+		go func() {
+			err := v.apiServer.Start(v.context)
+			common.Must(err)
+		}()
 	})
 	cr.Start()
-	v.apiServer.Start(v.context)
 	return nil
 }
 func New(config *config.Config, apiServer ApiServer) *V2ray {

@@ -55,7 +55,7 @@ func (v *Context) createCert() (*cert.Certificate, error) {
 	ports := v.GetNoUsePorts(2)
 	domain := common.Must2(v.ReadString("core", "host")).(string)
 	email := common.Must2(v.ReadString("core", "email")).(string)
-	pem, key, c, k, err := cert.LoadCertPem(domain, email, "", 80, ports[0], ports[1])
+	pem, key, c, k, err := cert.LoadCertPem(domain, email, "", 60, ports[0], ports[1])
 	return cert.NewCertificate(&tls.Certificate{Certificate: pem, Key: key, CertificateFile: c, KeyFile: k}, domain), err
 }
 
