@@ -29,6 +29,7 @@ func (v *V2ray) createCert() {
 func (v *V2ray) Start() error {
 	v.context.initConfig()
 	v.RangeServer(func(server Server) {
+		log.Println("Start", server.GetKey())
 		err := server.Start(v.context)
 		common.Must(err)
 	})

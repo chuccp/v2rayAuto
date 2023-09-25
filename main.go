@@ -22,6 +22,7 @@ func run() {
 	common.Must(err)
 	v2 := core.New(readConfig, &api.Server{})
 	v2.RegisterServer(&vmess.WsServer{})
+	v2.RegisterServer(&vmess.TcpServer{})
 	err = v2.Start()
 	common.Must(err)
 	sig := make(chan os.Signal, 1)
