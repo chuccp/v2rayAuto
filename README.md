@@ -32,3 +32,6 @@ email = XXXXXXX@gmail.com\
 [vmess_ws]\
 ##创建链接数量\
 create_num = 5
+[vmess_tcp]\
+##创建链接数量\
+create_num = 5
