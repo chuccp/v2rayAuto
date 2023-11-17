@@ -22,8 +22,7 @@ type Context struct {
 }
 
 func (v *Context) initConfig() {
-	v.host = common.Must2(v.ReadString("core", "host")).(string)
-	v.port = common.Must2(v.ReadInt("core", "port")).(int)
+	v.host = common.Must2(v.ReadString("core", "url")).(string)
 	from, to, err := v.ReadRangeInt("core", "range_port")
 	common.Must(err)
 	if to > from {
