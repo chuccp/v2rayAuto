@@ -38,7 +38,7 @@ func (v *V2ray) Start() error {
 		common.Must(err)
 	}()
 	cr := cron.New(cron.WithSeconds())
-	cr.AddFunc("0 0 0 * * *", func() {
+	cr.AddFunc(v.context.cron, func() {
 		log.Println("==================重启服务")
 		v.RangeServer(func(server Server) {
 			err := server.Flush()

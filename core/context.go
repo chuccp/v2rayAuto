@@ -18,6 +18,7 @@ type Context struct {
 	certificate *tls.Certificate
 	portRange   *net.PortRange
 	host        string
+	cron        string
 	port        int
 }
 
@@ -30,6 +31,7 @@ func (v *Context) initConfig() {
 	} else {
 		v.portRange = &net.PortRange{To: uint32(from), From: uint32(to)}
 	}
+	v.cron = common.Must2(v.ReadString("core", "cron")).(string)
 }
 
 func (v *Context) GetHost() string {
