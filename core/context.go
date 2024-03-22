@@ -4,6 +4,7 @@ import (
 	"github.com/chuccp/v2rayAuto/cert"
 	"github.com/chuccp/v2rayAuto/config"
 	"github.com/chuccp/v2rayAuto/util"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/v2fly/VSign/common"
 	"github.com/v2fly/v2ray-core/v5/common/net"
 	"github.com/v2fly/v2ray-core/v5/transport/internet/tls"
@@ -32,6 +33,7 @@ func (v *Context) initConfig() {
 		v.portRange = &net.PortRange{To: uint32(from), From: uint32(to)}
 	}
 	v.cron = common.Must2(v.ReadString("core", "cron")).(string)
+	log.Println(v.cron)
 }
 
 func (v *Context) GetHost() string {
