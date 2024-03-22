@@ -34,6 +34,8 @@ func (v *Context) initConfig() {
 	}
 	v.cron = common.Must2(v.ReadString("core", "cron")).(string)
 	log.Println(v.cron)
+	v.port = common.Must2(v.ReadInt("core", "port")).(int)
+	log.Println(v.port)
 }
 
 func (v *Context) GetHost() string {

@@ -6,6 +6,7 @@ import (
 	"github.com/chuccp/v2rayAuto/core"
 	"github.com/gin-gonic/gin"
 	"github.com/v2fly/v2ray-core/v5/common"
+	"log"
 )
 
 type Server struct {
@@ -52,6 +53,7 @@ func (s *Server) Start(context *core.Context) error {
 	r.GET(subscribe+"_flush", s.Flush)
 	cer := context.GetCertificate()
 	s.tlsHttp = &tlsHttp{}
+	log.Println("port", s.context.GetPort())
 	err := s.tlsHttp.Start(s.context.GetPort(), cer.CertificateFile, cer.KeyFile, r)
 	return err
 }
