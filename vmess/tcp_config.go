@@ -13,6 +13,7 @@ import (
 	"github.com/v2fly/v2ray-core/v5/proxy/vmess"
 	"github.com/v2fly/v2ray-core/v5/proxy/vmess/inbound"
 	"google.golang.org/protobuf/types/known/anypb"
+	"log"
 )
 
 type TcpConfig struct {
@@ -29,6 +30,7 @@ type tcpConfig struct {
 
 func CreateTcpConfig(context *core2.Context) (*TcpConfig, error) {
 	createNum, err := context.ReadInt("vmess_tcp", "create_num")
+	log.Println("CreateTcpConfig", createNum)
 	if err != nil {
 		return nil, err
 	}

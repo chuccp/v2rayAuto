@@ -24,6 +24,9 @@ func (s *TcpServer) Start(context *c.Context) (err error) {
 	return
 }
 func (s *TcpServer) Flush() (err error) {
+	if s.tcpConfig.CreateNum == 0 {
+		return nil
+	}
 	s.tcpConfig.FlushPort(s.tcpConfig.CreateNum)
 	if s.instance != nil {
 		err = s.instance.Close()
